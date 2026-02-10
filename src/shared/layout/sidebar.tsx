@@ -1,17 +1,60 @@
 import { NavLink } from "react-router-dom";
 import sidebarLinks from "../utils/sidebar.config";
 import RocketLogo from "../ui/RocketLogo";
+import { useState } from "react";
+import { MdArrowLeft, MdArrowRight } from "react-icons/md";
+
 
 const Sidebar = () => {
+  const [collapsed, setCollapsed] = useState(false)
   return (
-    <aside className="w-64 h-screen bg-white border-r flex flex-col px-4 py-6">
+    <aside
+      className={`
+    relative h-screen bg-white border-r
+    transition-all duration-300 pt-8 p-4
+    ${collapsed ? "w-20" : "w-64"}
+  `}
+    >
       {/* Logo */}
-      <div className="mb-10">
-        <div className="flex flex-row gap-2 items-center">
+      <div className="relative mb-10">
+        {/* Logo + Name */}
+        <div
+          className="
+      flex items-center gap-3 px-2
+      cursor-pointer
+      transition-transform duration-300
+      hover:scale-105
+    "
+        >
           <RocketLogo />
-        <h1 className="text-xl font-bold text-blue-600"> TeamTask</h1>
+
+          {!collapsed && (
+            <div className="flex flex-col leading-tight">
+              <h1 className="text-xl font-bold text-blue-700 items-center">
+                TeamTask
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Task Management App
+              </p>
+            </div>
+          )}
         </div>
-        <p className="text-sm text-gray-500 m-1">Task Management App</p>
+
+        {/* Collapse Toggle */}
+        <button
+          onClick={() => setCollapsed((prev) => !prev)}
+          className="
+      absolute top-2 -right-3
+      w-6 h-6 rounded-full
+      bg-blue-600 text-white
+      flex items-center justify-center
+      shadow-md
+      transition hover:scale-105
+    "
+          aria-label="Toggle sidebar"
+        >
+          {collapsed ? <MdArrowRight /> : <MdArrowLeft />}
+        </button>
       </div>
 
       {/* Navigation */}
@@ -29,12 +72,12 @@ const Sidebar = () => {
                     ${
                       isActive
                         ? "bg-blue-100 text-blue-700"
-                        : "text-gray-600 hover:bg-gray-100"
+                        : "text-gray-600 hover:bg-gray-100 transition-transform duration-300 hover:scale-105"
                     }`
                   }
                 >
-                  <Icon className="text-lg" />
-                  <span>{item.label}</span>
+                  <Icon className="text-lg shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
                 </NavLink>
               </li>
             );

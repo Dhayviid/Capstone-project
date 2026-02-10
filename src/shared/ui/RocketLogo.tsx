@@ -6,7 +6,11 @@ const RocketLogo = () => {
       viewBox="-0.5 0 155 155"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="cursor-pointer"
+      className="cursor-pointer text-blue-600 dark:text-blue-400
+        transition-transform duration-300
+        hover:scale-110
+        hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.6)] animate-[float_3s_ease-in-out_infinite]
+"
     >
       <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
       <g
