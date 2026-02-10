@@ -1,13 +1,17 @@
 import { NavLink } from "react-router-dom";
 import sidebarLinks from "../utils/sidebar.config";
+import RocketLogo from "../ui/RocketLogo";
 
 const Sidebar = () => {
   return (
     <aside className="w-64 h-screen bg-white border-r flex flex-col px-4 py-6">
       {/* Logo */}
       <div className="mb-10">
-        <h1 className="text-xl font-bold text-gray-800">TeamTask</h1>
-        <p className="text-sm text-gray-500">Task Management</p>
+        <div className="flex flex-row gap-2 items-center">
+          <RocketLogo />
+        <h1 className="text-xl font-bold text-blue-600"> TeamTask</h1>
+        </div>
+        <p className="text-sm text-gray-500 m-1">Task Management App</p>
       </div>
 
       {/* Navigation */}
