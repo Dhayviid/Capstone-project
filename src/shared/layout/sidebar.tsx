@@ -10,7 +10,7 @@ const Sidebar = () => {
   return (
     <aside
       className={`
-    relative h-screen bg-white border-r
+    relative h-screen bg-white rounded-3xl
     transition-all duration-300 pt-8 p-4
     ${collapsed ? "w-20" : "w-64"}
   `}
