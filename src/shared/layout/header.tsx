@@ -31,7 +31,7 @@ const Header = () => {
             "
           />
           <span className="absolute left-3 top-2.5 text-gray-400 text-sm items-center">
-            <MdOutlineSearch/>
+            <MdOutlineSearch className="h-5 w-5"/>
           </span>
         </div>
 

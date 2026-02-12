@@ -1,7 +1,12 @@
+import DashboardSummary from "../components/dashboard-summary";
+
 const DashboardPage = () => {
   return (
-    <div>DashboardPage</div>
-  )
-}
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <DashboardSummary />
+    </div>
+  );
+};
 
-export default DashboardPage
+export default DashboardPage;
