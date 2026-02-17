@@ -1,5 +1,3 @@
-// import type { RootState } from "../../../store/store";
-
 import type { RootState } from "../../../store/store";
 
 export const selectAllTasks = (state: RootState) => state.task.tasks;

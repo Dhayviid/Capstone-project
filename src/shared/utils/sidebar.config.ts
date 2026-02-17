@@ -1,4 +1,4 @@
-import {  MdOutlineBook, MdOutlineCalendarMonth, MdOutlineCheckBox, MdOutlineDashboard, MdOutlineHeadphones, MdOutlinePeople, MdOutlinePerson, MdOutlineReport, MdOutlineSettings  } from "react-icons/md";
+import {  MdOutlineCheckBox, MdOutlineDashboard, MdOutlinePeople, MdOutlineSettings  } from "react-icons/md";
 import type { IconType } from "react-icons";
 
 export type SidebarLink = {
@@ -19,29 +19,9 @@ const sidebarLinks: SidebarLink[] = [
     path: "/task",
   },
   {
-    label: "Schedule",
-    icon: MdOutlineCalendarMonth,
-    path: "/schedule",
-  },
-  {
-    label: "Note",
-    icon: MdOutlineBook,
-    path: "/note",
-  },
-  {
-    label: "Report",
-    icon: MdOutlineReport,
-    path: "/report",
-  },
-  {
     label: "Team",
     icon: MdOutlinePeople,
     path: "/team",
-  },
-  {
-    label: "Client",
-    icon: MdOutlinePerson,
-    path: "/client",
   },
   {
     label: "Settings",
@@ -49,11 +29,7 @@ const sidebarLinks: SidebarLink[] = [
     path: "/settings",
   },
 
-  {
-    label: "Support",
-    icon: MdOutlineHeadphones,
-    path: "/support",
-  },
+ 
 ];
 
 export default sidebarLinks;

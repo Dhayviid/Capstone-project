@@ -1,8 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import AuthCard from "../components/AuthCard";
+import { useNavigate } from "react-router";
 import { loginSuccess } from "../slices/auth.slice";
 import toast from "react-hot-toast";
+import { MdOutlineFacebook, MdOutlineMail } from "react-icons/md";
+import { FcGoogle } from 'react-icons/fc';
+import { AiFillApple } from "react-icons/ai";
+import AuthTabs from "../components/auth-tabs";
 
 export default function SignInPage() {
   const dispatch = useDispatch();
@@ -10,43 +14,61 @@ export default function SignInPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 1️⃣ Mark user as authenticated
     dispatch(loginSuccess());
     toast.success("Signed in successfully");
-
-    // 2️⃣ Redirect to dashboard
     navigate("/dashboard");
   };
 
   return (
-    <AuthCard title="Log In" subtitle="Welcome back! Please enter your details">
+    <AuthCard
+      title="Welcome Back"
+      subtitle="Welcome back. Please enter your details"
+    >
+      {/* Tabs */}
+      <AuthTabs />
+
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border px-4 py-2 rounded-md text-sm"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border px-4 py-2 rounded-md text-sm"
-        />
+        <div className="border rounded-lg px-3 py-2 flex items-center gap-2">
+          <span className="text-gray-400">
+            <MdOutlineMail />
+          </span>
+          <input
+            type="email"
+            placeholder="Email address"
+            className="w-full outline-none text-sm"
+          />
+        </div>
 
         <button
           type="submit"
-          className="w-full bg-slate-800 text-white py-2 rounded-md text-sm"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
         >
-          Log In
+          Continue
         </button>
       </form>
 
-      <p className="text-sm text-center text-slate-500 mt-4">
-        Don’t have an account?{" "}
-        <Link to="/signup" className="text-slate-800 font-medium">
-          Sign up
-        </Link>
-      </p>
+      {/* Divider */}
+      <div className="flex items-center gap-3 my-6">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-xs text-gray-400">Or continue with</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+
+      {/* Social Buttons */}
+      <div className="flex justify-center gap-4">
+        <button className="w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer">
+          <FcGoogle />
+        </button>
+        <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center cursor-pointer">
+          <AiFillApple />
+        </button>
+        <button className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center cursor-pointer">
+          <MdOutlineFacebook />
+        </button>
+      </div>
+
+      
     </AuthCard>
   );
 }
