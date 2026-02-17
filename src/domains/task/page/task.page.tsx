@@ -20,7 +20,7 @@ const TaskPage = () => {
     <div className="space-y-6">
       <TaskHeader />
 
-      <div className="bg-white rounded-xl shadow-sm divide-y">
+      <div className="bg-white rounded-xl shadow-sm divide-y divide-gray-200">
         {filteredTasks.length === 0 ? (
           <p className="p-6 text-gray-500">No tasks found</p>
         ) : (

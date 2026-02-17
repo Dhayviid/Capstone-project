@@ -1,29 +1,39 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import sidebarLinks from "../utils/sidebar.config";
 import RocketLogo from "../ui/RocketLogo";
 import { useState } from "react";
-import { MdArrowLeft, MdArrowRight } from "react-icons/md";
+import { MdArrowLeft, MdArrowRight, MdLogout } from "react-icons/md";
+import { useDispatch } from "react-redux";
+import { logout } from "../../auth/slices/auth.slice";
 
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/signin");
+  };
   return (
     <aside
       className={`
     relative h-screen bg-white rounded-l-2xl border-r-2 border-t-2 border-r-gray-300 border-t-gray-300
-    transition-all duration-300 pt-8 p-4
+    transition-all duration-300 pt-20 p-4
+    flex flex-col
     ${collapsed ? "w-20" : "w-64"}
   `}
     >
       {/* Logo */}
-      <div className="relative mb-10">
+      <div className="relative">
         {/* Logo + Name */}
         <div
           className="
       flex items-center gap-3 px-2
       cursor-pointer
       transition-transform duration-300
-      hover:scale-105
+      hover:scale-105 
     "
         >
           <RocketLogo />
@@ -58,13 +68,13 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1">
-        <ul className="space-y-2">
+      <nav className="flex-1 flex flex-col py-12">
+        <ul className="space-y-6">
           {sidebarLinks.map((item) => {
             const Icon = item.icon;
 
             return (
-              <li key={item.path}>
+              <li key={item.path} >
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
@@ -84,6 +94,17 @@ const Sidebar = () => {
           })}
         </ul>
       </nav>
+
+      {/* Logout Button */}
+      <div className="border-t border-gray-200 pt-4 mt-auto">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-transform duration-300 hover:scale-105"
+        >
+          <MdLogout className="text-lg shrink-0" />
+          {!collapsed && <span>Logout</span>}
+        </button>
+      </div>
     </aside>
   );
 };

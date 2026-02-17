@@ -32,7 +32,7 @@ export default function AuthCard({ title, subtitle, children }: AuthCardProps) {
 
       {/* RIGHT SIDE (IMAGE PANEL) */}
       <div className="hidden md:flex items-center justify-center bg-linear-to-br from-blue-200 to-blue-500">
-        <img src="/public/auth-page-side-image.png" alt="rocket-image" className="w-auto h-72"/>
+        <img src="/auth-page-side-image.png" alt="rocket-image" className="w-auto h-72"/>
       </div>
     </div>
   );
