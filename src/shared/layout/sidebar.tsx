@@ -6,7 +6,6 @@ import { MdArrowLeft, MdArrowRight, MdLogout } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import { logout } from "../../auth/slices/auth.slice";
 
-
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const dispatch = useDispatch();
@@ -19,9 +18,9 @@ const Sidebar = () => {
   return (
     <aside
       className={`
-    relative h-screen bg-white rounded-l-2xl border-r-2 border-t-2 border-r-gray-300 border-t-gray-300
+    relative h-screen rounded-l-2xl border-r-2 border-t-2 border-r-gray-300 border-t-gray-300
     transition-all duration-300 pt-20 p-4
-    flex flex-col
+    flex flex-col bg-white
     ${collapsed ? "w-20" : "w-64"}
   `}
     >
@@ -40,12 +39,10 @@ const Sidebar = () => {
 
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <h1 className="text-xl font-bold text-blue-700 items-center">
+              <h1 className="text-xl font-bold items-center text-blue-700">
                 TeamTask
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Task Management App
-              </p>
+              <p className="text-sm text-gray-500">Task Management App</p>
             </div>
           )}
         </div>
@@ -74,7 +71,7 @@ const Sidebar = () => {
             const Icon = item.icon;
 
             return (
-              <li key={item.path} >
+              <li key={item.path}>
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
@@ -82,8 +79,8 @@ const Sidebar = () => {
                     ${
                       isActive
                         ? "bg-blue-100 text-blue-700"
-                        : "text-gray-600 hover:bg-gray-100 transition-transform duration-300 hover:scale-105"
-                    }`
+                        : "text-gray-600 hover:bg-gray-100"
+                    } transition-transform duration-300 hover:scale-105`
                   }
                 >
                   <Icon className="text-lg shrink-0" />
@@ -96,10 +93,10 @@ const Sidebar = () => {
       </nav>
 
       {/* Logout Button */}
-      <div className="border-t border-gray-200 pt-4 mt-auto">
+      <div className="border-t pt-4 mt-auto border-gray-200">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-transform duration-300 hover:scale-105"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-transform duration-300 hover:scale-105 text-gray-600 hover:bg-red-50 hover:text-red-600"
         >
           <MdLogout className="text-lg shrink-0" />
           {!collapsed && <span>Logout</span>}

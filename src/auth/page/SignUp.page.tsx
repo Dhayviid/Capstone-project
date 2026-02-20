@@ -18,20 +18,20 @@ export default function SignUpPage() {
 
   return (
     <AuthCard title="Create Account" subtitle="Start your 30 days free trial">
-      <AuthTabs/>
+      <AuthTabs />
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           placeholder="Full name"
-          className="w-full border px-4 py-2 rounded-lg text-sm"
+          className="w-full border border-gray-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           placeholder="Email address"
-          className="w-full border px-4 py-2 rounded-lg text-sm"
+          className="w-full border border-gray-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           placeholder="Password"
           type="password"
-          className="w-full border px-4 py-2 rounded-lg text-sm"
+          className="w-full border border-gray-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         <button

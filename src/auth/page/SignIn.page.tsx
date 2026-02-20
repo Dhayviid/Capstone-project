@@ -3,17 +3,36 @@ import AuthCard from "../components/AuthCard";
 import { useNavigate } from "react-router";
 import { loginSuccess } from "../slices/auth.slice";
 import toast from "react-hot-toast";
-import { MdOutlineFacebook, MdOutlineMail } from "react-icons/md";
-import { FcGoogle } from 'react-icons/fc';
+import {
+  MdOutlineFacebook,
+  MdOutlineMail,
+  MdOutlineLock,
+} from "react-icons/md";
+import { FcGoogle } from "react-icons/fc";
 import { AiFillApple } from "react-icons/ai";
 import AuthTabs from "../components/auth-tabs";
+import { useState } from "react";
 
 export default function SignInPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation: Check if both fields are filled
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+
+    if (!password.trim()) {
+      toast.error("Password is required");
+      return;
+    }
+
     dispatch(loginSuccess());
     toast.success("Signed in successfully");
     navigate("/dashboard");
@@ -29,7 +48,7 @@ export default function SignInPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="border rounded-lg px-3 py-2 flex items-center gap-2">
+        <div className="border border-gray-200 rounded-lg px-3 py-2 flex items-center gap-2">
           <span className="text-gray-400">
             <MdOutlineMail />
           </span>
@@ -37,6 +56,23 @@ export default function SignInPage() {
             type="email"
             placeholder="Email address"
             className="w-full outline-none text-sm"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="border border-gray-200 rounded-lg px-3 py-2 flex items-center gap-2">
+          <span className="text-gray-400">
+            <MdOutlineLock />
+          </span>
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full outline-none text-sm"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
 
@@ -67,8 +103,6 @@ export default function SignInPage() {
           <MdOutlineFacebook />
         </button>
       </div>
-
-      
     </AuthCard>
   );
 }
