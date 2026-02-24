@@ -51,7 +51,7 @@ const CreateTaskModal = ({ onClose }: Props) => {
         <input
           type="text"
           placeholder="Task title"
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900"
+          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={loading}
@@ -59,7 +59,7 @@ const CreateTaskModal = ({ onClose }: Props) => {
 
         <textarea
           placeholder="Task description (optional)"
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900"
+          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
@@ -67,7 +67,7 @@ const CreateTaskModal = ({ onClose }: Props) => {
         />
 
         <select
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900"
+          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
           value={status}
           onChange={(e) => setStatus(e.target.value as "todo" | "done")}
           disabled={loading}
@@ -79,7 +79,7 @@ const CreateTaskModal = ({ onClose }: Props) => {
         <input
           type="text"
           placeholder="Assign to (optional)"
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900"
+          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
           disabled={loading}
