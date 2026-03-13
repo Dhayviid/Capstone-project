@@ -33,7 +33,9 @@ export default function SignInPage() {
       return;
     }
 
-    dispatch(loginSuccess());
+    // Mock user data for sign-in (since no real auth)
+    const user = { name: "David Donald", email: email.trim() };
+    dispatch(loginSuccess(user));
     toast.success("Signed in successfully");
     navigate("/dashboard");
   };

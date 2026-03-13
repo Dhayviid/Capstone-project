@@ -1,56 +1,99 @@
+import { useMemo, useState } from "react";
 import {
+  MdDarkMode,
+  MdLightMode,
   MdNotificationsNone,
-  MdMailOutline,
   MdOutlineSearch,
+  MdPerson,
 } from "react-icons/md";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDark, setIsDark] = useState(false);
 
-  const getTitle = () => {
-    if (location.pathname.includes("dashboard")) return "Board";
-    if (location.pathname.includes("tasks")) return "Tasks";
+  const getTitle = useMemo(() => {
+    if (location.pathname.includes("dashboard")) return "Dashboard";
+    if (location.pathname.includes("task")) return "Tasks";
+    if (location.pathname.includes("files")) return "Files";
+    if (location.pathname.includes("sharing")) return "Sharing";
+    if (location.pathname.includes("activity")) return "Activity";
+    if (location.pathname.includes("notifications")) return "Notifications";
+    if (location.pathname.includes("team")) return "Team";
+    if (location.pathname.includes("settings")) return "Settings";
     return "TeamTask";
+  }, [location.pathname]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/task?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      return next;
+    });
   };
 
   return (
-    <header className="h-16 bg-white border-b-2 border-b-gray-300 flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
       {/* Left Section - Page Title */}
-      <h2 className="text-xl font-semibold text-gray-800">{getTitle()}</h2>
+      <h2 className="text-xl font-semibold text-gray-800">{getTitle}</h2>
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
         {/* Search */}
-        <div className="relative">
+        <form onSubmit={handleSearch} className="relative">
           <input
             type="text"
-            placeholder="Search"
-            className="
-              w-64 pl-10 pr-4 py-2
-              rounded-lg border border-gray-200
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-              text-sm bg-white text-gray-900
-            "
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-64 rounded-lg border border-gray-200 bg-white px-10 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
           />
-          <span className="absolute left-3 top-2.5 text-gray-400 text-sm items-center">
+          <button
+            type="submit"
+            className="absolute left-3 top-2.5 text-gray-400"
+            aria-label="Search tasks"
+          >
             <MdOutlineSearch className="h-5 w-5" />
-          </span>
-        </div>
+          </button>
+        </form>
 
-        {/* Notification Icons */}
-        <button className="p-2 rounded-full hover:bg-gray-100 transition">
-          <MdNotificationsNone className="text-xl text-gray-600" />
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50"
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <MdLightMode className="h-5 w-5" />
+          ) : (
+            <MdDarkMode className="h-5 w-5" />
+          )}
         </button>
 
-        <button className="p-2 rounded-full hover:bg-gray-100 transition">
-          <MdMailOutline className="text-xl text-gray-600" />
+        {/* Notifications */}
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50"
+          aria-label="View notifications"
+        >
+          <MdNotificationsNone className="h-5 w-5" />
         </button>
 
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-medium">
-          DK
-        </div>
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm"
+          aria-label="Open user menu"
+        >
+          <MdPerson className="h-5 w-5" />
+        </button>
       </div>
     </header>
   );

@@ -18,23 +18,16 @@ const Sidebar = () => {
   return (
     <aside
       className={`
-    relative h-screen rounded-l-2xl border-r-2 border-t-2 border-r-gray-300 border-t-gray-300
-    transition-all duration-300 pt-20 p-4
+    relative h-screen rounded-l-2xl border-r border-gray-200
+    transition-all duration-300 pt-10 p-4
     flex flex-col bg-white
     ${collapsed ? "w-20" : "w-64"}
   `}
     >
       {/* Logo */}
-      <div className="relative">
+      <div className="relative pb-14">
         {/* Logo + Name */}
-        <div
-          className="
-      flex items-center gap-3 px-2
-      cursor-pointer
-      transition-transform duration-300
-      hover:scale-105 
-    "
-        >
+        <div className="flex items-center gap-3 px-2 cursor-pointer transition-transform duration-300 hover:scale-105">
           <RocketLogo />
 
           {!collapsed && (
@@ -75,12 +68,12 @@ const Sidebar = () => {
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium transition
+                    `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200
                     ${
                       isActive
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-blue-50 text-blue-700"
                         : "text-gray-600 hover:bg-gray-100"
-                    } transition-transform duration-300 hover:scale-105`
+                    } hover:shadow-sm`
                   }
                 >
                   <Icon className="text-lg shrink-0" />
@@ -96,7 +89,7 @@ const Sidebar = () => {
       <div className="border-t pt-4 mt-auto border-gray-200">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-transform duration-300 hover:scale-105 text-gray-600 hover:bg-red-50 hover:text-red-600"
+          className="cursor-pointer w-full flex text-left gap-3 px-4 py-3 rounded-md text-sm font-medium transition-transform duration-300 hover:scale-105 text-gray-600 hover:bg-red-50 hover:text-red-600"
         >
           <MdLogout className="text-lg shrink-0" />
           {!collapsed && <span>Logout</span>}

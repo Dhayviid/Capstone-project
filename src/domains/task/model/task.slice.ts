@@ -12,7 +12,82 @@ export const fetchTasks = createAsyncThunk(
     try {
       await simulateApiDelay();
       const saved = localStorage.getItem("tasks");
-      return saved ? JSON.parse(saved) : [];
+
+      if (saved) {
+        return JSON.parse(saved);
+      }
+
+      // Seed sample tasks on first load
+      const today = new Date();
+      const formatISODate = (date: Date) => date.toISOString().split("T")[0];
+
+      const initialTasks: Task[] = [
+        {
+          id: "t-1",
+          title: "Define MVP features",
+          description: "Capture core requirements and user flows.",
+          project: "Product",
+          priority: "high",
+          status: "todo",
+          favorite: true,
+          createdAt: new Date().toISOString(),
+          dueDate: formatISODate(today),
+          day: "Monday",
+          time: "10:00 AM",
+          participants: ["Ali", "Sam"],
+        },
+        {
+          id: "t-2",
+          title: "Design onboarding screens",
+          description: "Create high-fidelity mocks for onboarding.",
+          project: "Design",
+          priority: "medium",
+          status: "in-progress",
+          favorite: false,
+          createdAt: new Date().toISOString(),
+          dueDate: formatISODate(
+            new Date(today.getTime() + 24 * 60 * 60 * 1000),
+          ),
+          day: "Tuesday",
+          time: "2:00 PM",
+          participants: ["Maya"],
+        },
+        {
+          id: "t-3",
+          title: "Run usability tests",
+          description: "Gather feedback from recent test sessions.",
+          project: "Research",
+          priority: "low",
+          status: "todo",
+          favorite: false,
+          createdAt: new Date().toISOString(),
+          dueDate: formatISODate(
+            new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000),
+          ),
+          day: "Wednesday",
+          time: "11:00 AM",
+          participants: ["Jules", "Noah"],
+        },
+        {
+          id: "t-4",
+          title: "Prepare release notes",
+          description: "Document product updates for this release.",
+          project: "Release",
+          priority: "high",
+          status: "todo",
+          favorite: false,
+          createdAt: new Date().toISOString(),
+          dueDate: formatISODate(
+            new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000),
+          ),
+          day: "Thursday",
+          time: "4:00 PM",
+          participants: ["Sam"],
+        },
+      ];
+
+      localStorage.setItem("tasks", JSON.stringify(initialTasks));
+      return initialTasks;
     } catch {
       return rejectWithValue("Failed to fetch tasks");
     }
@@ -28,6 +103,8 @@ export const createTask = createAsyncThunk(
         ...taskData,
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
+        status: taskData.status ?? "todo",
+        favorite: taskData.favorite ?? false,
       };
 
       const saved = localStorage.getItem("tasks");
@@ -116,6 +193,7 @@ const initialState: TaskState = {
   tasks: [],
   loading: false,
   error: null,
+  activeProject: null,
 };
 
 const taskSlice = createSlice({
@@ -124,6 +202,9 @@ const taskSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setActiveProject: (state, action: { payload: string | null }) => {
+      state.activeProject = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -206,5 +287,5 @@ const taskSlice = createSlice({
   },
 });
 
-export const { clearError } = taskSlice.actions;
+export const { clearError, setActiveProject } = taskSlice.actions;
 export default taskSlice.reducer;

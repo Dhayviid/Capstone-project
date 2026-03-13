@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { selectAllTasks } from "../model/task.selectors";
 import { fetchTasks } from "../model/task.slice";
+import { fetchTeamMembers } from "../../team/model/team.slice";
 import TaskHeader from "../components/task-header";
 import TaskItem from "../components/task-item";
 import type { RootState, AppDispatch } from "../../../store/store";
@@ -12,14 +13,19 @@ const TaskPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const tasks = useSelector(selectAllTasks);
   const { loading, error } = useSelector((state: RootState) => state.task);
+  const { members } = useSelector((state: RootState) => state.team);
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
-  const [searchQuery, setSearchQuery] = useState("");
+  const urlSearch = searchParams.get("search");
+  const [searchQuery, setSearchQuery] = useState(urlSearch || "");
+  const [assignedFilter, setAssignedFilter] = useState("");
+  const [dueDateFilter, setDueDateFilter] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "status" | "title">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     dispatch(fetchTasks());
+    dispatch(fetchTeamMembers());
   }, [dispatch]);
 
   const filteredTasks = (() => {
@@ -36,8 +42,26 @@ const TaskPage = () => {
       filtered = filtered.filter(
         (task) =>
           task.title.toLowerCase().includes(query) ||
-          task.description.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
           (task.assignedTo && task.assignedTo.toLowerCase().includes(query)),
+      );
+    }
+
+    // Apply assigned user filter
+    if (assignedFilter) {
+      filtered = filtered.filter((task) => {
+        if (assignedFilter === "unassigned") {
+          return !task.assignedTo;
+        }
+        return task.assignedTo === assignedFilter;
+      });
+    }
+
+    // Apply due date filter
+    if (dueDateFilter) {
+      const maxDate = new Date(dueDateFilter);
+      filtered = filtered.filter(
+        (task) => task.dueDate && new Date(task.dueDate) <= maxDate,
       );
     }
 
@@ -103,7 +127,7 @@ const TaskPage = () => {
 
       {/* Sorting and Search Controls */}
       <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">
               Sort by:
@@ -131,6 +155,43 @@ const TaskPage = () => {
               <option value="desc">Newest First</option>
               <option value="asc">Oldest First</option>
             </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">
+              Assigned:
+            </label>
+            <select
+              value={assignedFilter}
+              onChange={(e) => setAssignedFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-1 text-sm bg-white text-gray-900"
+            >
+              <option value="">All</option>
+              <option value="unassigned">Unassigned</option>
+              {members.map((member) => (
+                <option key={member.id} value={member.name}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Due by:</label>
+            <input
+              type="date"
+              value={dueDateFilter}
+              onChange={(e) => setDueDateFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-1 text-sm bg-white text-gray-900"
+            />
+            {dueDateFilter && (
+              <button
+                onClick={() => setDueDateFilter("")}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
 

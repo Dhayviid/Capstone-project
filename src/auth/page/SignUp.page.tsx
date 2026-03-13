@@ -33,7 +33,8 @@ export default function SignUpPage() {
       return;
     }
 
-    dispatch(loginSuccess());
+    const user = { name: fullName.trim(), email: email.trim() };
+    dispatch(loginSuccess(user));
     toast.success("Account created successfully");
     navigate("/dashboard");
   };

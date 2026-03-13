@@ -9,6 +9,13 @@ import { useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../../../store/store";
 import toast from "react-hot-toast";
 
+const getInitials = (name: string) => {
+  const parts = name.trim().split(" ");
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+};
+
 interface TaskItemProps {
   task: Task;
 }
@@ -43,15 +50,32 @@ const TaskItem = ({ task }: TaskItemProps) => {
   return (
     <div className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
       <div className="flex-1">
-        <p className="font-medium text-gray-900">{task.title}</p>
-        <div className="flex items-center gap-4 mt-1">
+        <div className="flex items-start justify-between">
+          <p className="font-medium text-gray-900">{task.title}</p>
+          {task.dueDate && (
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              Due{" "}
+              {new Date(task.dueDate).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 mt-2">
           <p className="text-sm text-gray-500">
             {task.status === "done" ? "Completed" : "Pending"}
           </p>
           {task.assignedTo && (
-            <p className="text-sm text-blue-600">
-              Assigned to: {task.assignedTo}
-            </p>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
+                {getInitials(task.assignedTo)}
+              </span>
+              <span className="text-blue-600">
+                Assigned to: {task.assignedTo}
+              </span>
+            </div>
           )}
         </div>
       </div>

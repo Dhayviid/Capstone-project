@@ -1,16 +1,10 @@
-export type TaskStatus = "todo" | "done";
+import type { Task as GlobalTask } from "../../../types/task.types";
 
-export interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  createdAt: string;
-  assignedTo?: string;
-}
+export type Task = GlobalTask;
 
 export interface TaskState {
   tasks: Task[];
   loading: boolean;
   error: string | null;
+  activeProject: string | null;
 }

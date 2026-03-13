@@ -1,4 +1,12 @@
-import {  MdOutlineCheckBox, MdOutlineDashboard, MdOutlinePeople, MdOutlineSettings  } from "react-icons/md";
+import {
+  MdOutlineDashboard,
+  MdOutlineCheckBox,
+  MdOutlineFolder,
+  MdOutlineGroup,
+  MdOutlineShare,
+  MdOutlineBarChart,
+  MdOutlineNotifications,
+} from "react-icons/md";
 import type { IconType } from "react-icons";
 
 export type SidebarLink = {
@@ -14,22 +22,35 @@ const sidebarLinks: SidebarLink[] = [
     path: "/dashboard",
   },
   {
-    label: "Task",
+    label: "Tasks",
     icon: MdOutlineCheckBox,
     path: "/task",
   },
   {
     label: "Team",
-    icon: MdOutlinePeople,
+    icon: MdOutlineGroup,
     path: "/team",
   },
   {
-    label: "Settings",
-    icon: MdOutlineSettings,
-    path: "/settings",
+    label: "Files",
+    icon: MdOutlineFolder,
+    path: "/files",
   },
-
- 
+  {
+    label: "Sharing",
+    icon: MdOutlineShare,
+    path: "/sharing",
+  },
+  {
+    label: "Activity",
+    icon: MdOutlineBarChart,
+    path: "/activity",
+  },
+  {
+    label: "Notifications",
+    icon: MdOutlineNotifications,
+    path: "/notifications",
+  },
 ];
 
 export default sidebarLinks;

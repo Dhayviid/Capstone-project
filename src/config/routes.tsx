@@ -11,6 +11,10 @@ import SettingsPage from "../domains/settings/page/settings.page";
 
 import TaskPage from "../domains/task/page/task.page";
 import TeamPage from "../domains/team/page/team.page";
+import FilesPage from "../domains/files/page/files.page";
+import SharingPage from "../domains/sharing/page/sharing.page";
+import ActivityPage from "../domains/activity/page/activity.page";
+import NotificationsPage from "../domains/notifications/page/notifications.page";
 
 const router = createBrowserRouter([
   // 🔓 Public Routes
@@ -35,7 +39,11 @@ const router = createBrowserRouter([
           { path: "dashboard", element: <DashboardPage /> },
           { path: "settings", element: <SettingsPage /> },
           { path: "task", element: <TaskPage /> },
-          { path: "Team", element: <TeamPage /> },
+          { path: "team", element: <TeamPage /> },
+          { path: "files", element: <FilesPage /> },
+          { path: "sharing", element: <SharingPage /> },
+          { path: "activity", element: <ActivityPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
           // { path: "logout", element: <Logout /> },
         ],
       },

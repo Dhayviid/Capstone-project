@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "../../../store/store";
 import { updateTaskAsync } from "../model/task.slice";
+import { fetchTeamMembers } from "../../team/model/team.slice";
 import type { Task } from "../model/task.types";
-import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
 import toast from "react-hot-toast";
 
@@ -15,11 +15,26 @@ interface EditTaskModalProps {
 const EditTaskModal = ({ task, onClose }: EditTaskModalProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.task);
+  const { members } = useSelector((state: RootState) => state.team);
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description);
-  const [status, setStatus] = useState<"todo" | "done">(task.status);
+  const [description, setDescription] = useState(task.description || "");
+  const [status, setStatus] = useState<"todo" | "in-progress" | "done">(
+    task.status,
+  );
+  const [dueDate, setDueDate] = useState(task.dueDate ?? "");
   const [assignedTo, setAssignedTo] = useState(task.assignedTo || "");
+
+  const isAdmin = members.some(
+    (member) => member.email === user?.email && member.role === "admin",
+  );
+
+  useEffect(() => {
+    if (isAdmin) {
+      dispatch(fetchTeamMembers());
+    }
+  }, [dispatch, isAdmin]);
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -32,8 +47,9 @@ const EditTaskModal = ({ task, onClose }: EditTaskModalProps) => {
         updateTaskAsync({
           ...task,
           title: title.trim(),
-          description: description.trim(),
+          description: description?.trim() ?? "",
           status,
+          dueDate: dueDate || undefined,
           assignedTo: assignedTo.trim() || undefined,
         }),
       ).unwrap();
@@ -71,21 +87,59 @@ const EditTaskModal = ({ task, onClose }: EditTaskModalProps) => {
         <select
           className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900"
           value={status}
-          onChange={(e) => setStatus(e.target.value as "todo" | "done")}
+          onChange={(e) =>
+            setStatus(e.target.value as "todo" | "in-progress" | "done")
+          }
           disabled={loading}
         >
           <option value="todo">Pending</option>
+          <option value="in-progress">In Progress</option>
           <option value="done">Completed</option>
         </select>
 
-        <input
-          type="text"
-          placeholder="Assign to (optional)"
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 placeholder-gray-500"
-          value={assignedTo}
-          onChange={(e) => setAssignedTo(e.target.value)}
-          disabled={loading}
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            disabled={loading}
+          />
+          {dueDate && (
+            <button
+              type="button"
+              onClick={() => setDueDate("")}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {isAdmin ? (
+          <select
+            className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
+            disabled={loading}
+          >
+            <option value="">Unassigned</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.name}>
+                {member.name} ({member.role})
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type="text"
+            placeholder="Assign to (optional)"
+            className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
+            disabled={loading}
+          />
+        )}
 
         <div className="flex justify-end gap-2">
           <button

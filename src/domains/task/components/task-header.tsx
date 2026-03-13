@@ -7,8 +7,6 @@ const TaskHeader = () => {
   return (
     <>
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Tasks</h1>
-
         <button
           onClick={() => setOpen(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
