@@ -10,6 +10,7 @@ import SignUpPage from "../auth/page/SignUp.page";
 import SettingsPage from "../domains/settings/page/settings.page";
 
 import TaskPage from "../domains/task/page/task.page";
+import TaskDetailPage from "../domains/task/page/task-detail.page";
 import TeamPage from "../domains/team/page/team.page";
 import FilesPage from "../domains/files/page/files.page";
 import SharingPage from "../domains/sharing/page/sharing.page";
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
           { path: "dashboard", element: <DashboardPage /> },
           { path: "settings", element: <SettingsPage /> },
           { path: "task", element: <TaskPage /> },
+          { path: "tasks/:taskId", element: <TaskDetailPage /> },
           { path: "team", element: <TeamPage /> },
           { path: "files", element: <FilesPage /> },
           { path: "sharing", element: <SharingPage /> },

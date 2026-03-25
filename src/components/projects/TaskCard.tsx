@@ -27,7 +27,7 @@ const TaskCard = ({ task }: TaskCardProps) => (
         {task.priority}
       </span>
       <span className="text-xs font-medium text-gray-500">
-        {task.time ?? "—"}
+        {task.timeSpent ? `${Math.floor(task.timeSpent / 60)}m` : "—"}
       </span>
     </div>
 

@@ -1,20 +1,20 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { toggleTaskAsync, deleteTaskAsync } from "../model/task.slice";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  startTimerAsync,
+  pauseTimerAsync,
+  resumeTimerAsync,
+  cancelTimerAsync,
+} from "../../timer/model/timer.slice";
+import { toggleTaskStatusAsync, deleteTaskAsync } from "../model/task.slice";
 import type { Task } from "../model/task.types";
 import EditTaskModal from "../modal/edit-task-modal";
 import DeleteConfirmationModal from "../modal/delete-confirmation-modal";
-import { MdDelete, MdEdit, MdToggleOn } from "react-icons/md";
-import { useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "../../../store/store";
+import { MdDelete, MdEdit } from "react-icons/md";
+import type { AppDispatch, RootState } from "../../../store/store";
 import toast from "react-hot-toast";
-
-const getInitials = (name: string) => {
-  const parts = name.trim().split(" ");
-  if (parts.length === 0) return "";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-};
+import TimerStatusChip from "../../../shared/components/TimerStatusChip";
 
 interface TaskItemProps {
   task: Task;
@@ -22,103 +22,171 @@ interface TaskItemProps {
 
 const TaskItem = ({ task }: TaskItemProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.task);
+  const navigate = useNavigate();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const timer = useSelector((state: RootState) => state.timer);
+  const isActive = timer.activeTaskId === task.id;
 
   const handleToggle = async () => {
     try {
-      await dispatch(toggleTaskAsync(task.id)).unwrap();
+      await dispatch(toggleTaskStatusAsync(task.id)).unwrap();
       toast.success("Task status updated");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to update task status");
+    } catch {
+      toast.error("Failed to update status");
     }
   };
 
   const handleDelete = async () => {
     try {
       await dispatch(deleteTaskAsync(task.id)).unwrap();
-      toast.success("Task deleted successfully");
+      toast.success("Task deleted");
       setIsDeleteOpen(false);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to delete task");
+    } catch {
+      toast.error("Failed to delete");
     }
   };
 
   return (
-    <div className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
-      <div className="flex-1">
-        <div className="flex items-start justify-between">
-          <p className="font-medium text-gray-900">{task.title}</p>
-          {task.dueDate && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-              Due{" "}
-              {new Date(task.dueDate).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              })}
-            </span>
-          )}
+    <div className="p-4 flex flex-col gap-2 border-b last:border-b-0">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="font-medium">{task.title}</div>
+            <TimerStatusChip isActive={isActive} isRunning={timer.isRunning} />
+          </div>
+          <div className="text-xs text-gray-500">
+            {task.description ?? "No description"}
+          </div>
         </div>
-
-        <div className="flex items-center gap-3 mt-2">
-          <p className="text-sm text-gray-500">
-            {task.status === "done" ? "Completed" : "Pending"}
-          </p>
-          {task.assignedTo && (
-            <div className="flex items-center gap-2 text-sm text-gray-700">
-              <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
-                {getInitials(task.assignedTo)}
-              </span>
-              <span className="text-blue-600">
-                Assigned to: {task.assignedTo}
-              </span>
-            </div>
+        <div className="flex gap-5">
+          <button
+            onClick={() => navigate(`/tasks/${task.id}`)}
+            className="text-blue-700 text-xs flex items-center gap-1 cursor-pointer"
+          >
+            View Task
+          </button>
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="text-blue-700 text-xs flex items-center gap-1 cursor-pointer"
+          >
+            <MdEdit /> Edit
+          </button>
+          {!isActive && (
+            <button
+              onClick={async () => {
+                try {
+                  await dispatch(startTimerAsync({ taskId: task.id })).unwrap();
+                  toast.custom(
+                    (t) => (
+                      <div className="fixed top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow-lg flex items-center gap-3">
+                        <span>Timer is active for {task.title}</span>
+                        <button
+                          onClick={() => {
+                            toast.dismiss(t.id);
+                            document
+                              .getElementById("tracker-section")
+                              ?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="underline text-sm"
+                        >
+                          Go to tracker
+                        </button>
+                      </div>
+                    ),
+                    { id: "timer-active-banner", duration: 3000 },
+                  );
+                } catch (err) {
+                  toast.error(
+                    typeof err === "string" ? err : "Could not start timer",
+                  );
+                }
+              }}
+              className="text-blue-700 text-xs cursor-pointer"
+            >
+              Start Timer
+            </button>
           )}
+          {isActive && timer.isRunning && (
+            <button
+              onClick={async () => {
+                try {
+                  const result = await dispatch(pauseTimerAsync()).unwrap();
+                  if (result) {
+                    toast.success(`Timer paused for ${task.title}`);
+                  }
+                } catch {
+                  toast.error("Could not pause timer");
+                }
+              }}
+              className="text-orange-700 text-xs cursor-pointer"
+            >
+              Pause
+            </button>
+          )}
+          {isActive && !timer.isRunning && (
+            <button
+              onClick={async () => {
+                try {
+                  await dispatch(resumeTimerAsync()).unwrap();
+                  toast.success(`Timer resumed for ${task.title}`);
+                } catch {
+                  toast.error("Could not resume timer");
+                }
+              }}
+              className="text-blue-700 text-xs cursor-pointer"
+            >
+              Resume
+            </button>
+          )}
+          {isActive && (
+            <button
+              onClick={async () => {
+                try {
+                  await dispatch(cancelTimerAsync()).unwrap();
+                  toast.success(`Timer canceled for ${task.title}`);
+                } catch {
+                  toast.error("Could not cancel timer");
+                }
+              }}
+              className="text-red-600 text-xs cursor-pointer"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            onClick={handleToggle}
+            className="text-green-700 text-xs cursor-pointer"
+          >
+            {task.status === "done" ? "Reopen" : "Complete"}
+          </button>
+          <button
+            onClick={() => setIsDeleteOpen(true)}
+            className="text-red-600 text-xs cursor-pointer flex flex-row gap-1"
+          >
+            <MdDelete /> Delete
+          </button>
         </div>
       </div>
-
-      <div className="flex gap-4">
-        <button
-          onClick={() => setIsEditOpen(true)}
-          className="text-green-600 text-sm flex flex-row gap-1.5 items-center cursor-pointer disabled:opacity-50"
-          disabled={loading}
-        >
-          Edit
-          <MdEdit />
-        </button>
-
-        <button
-          onClick={handleToggle}
-          className="text-blue-600 text-sm flex flex-row gap-1.5 items-center cursor-pointer disabled:opacity-50"
-          disabled={loading}
-        >
-          {loading ? "Updating..." : "Toggle"}
-          <MdToggleOn />
-        </button>
-
-        <button
-          onClick={() => setIsDeleteOpen(true)}
-          className="text-red-600 text-sm flex flex-row gap-1.5 items-center cursor-pointer disabled:opacity-50"
-          disabled={loading}
-        >
-          Delete
-          <MdDelete />
-        </button>
+      <div className="text-xs text-gray-500 flex flex-wrap gap-2">
+        <span>Status: {task.status}</span>
+        <span>Priority: {task.priority}</span>
+        {task.assignedTo && <span>Assigned: {task.assignedTo}</span>}
+        <span>Time: {Math.floor(task.timeSpent / 60)}m</span>
+        {task.scheduledAt && (
+          <span>Scheduled: {new Date(task.scheduledAt).toLocaleString()}</span>
+        )}
       </div>
 
       {isEditOpen && (
         <EditTaskModal task={task} onClose={() => setIsEditOpen(false)} />
       )}
-
       <DeleteConfirmationModal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDelete}
         title="Delete Task"
-        message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
+        message={`Delete ${task.title}?`}
       />
     </div>
   );

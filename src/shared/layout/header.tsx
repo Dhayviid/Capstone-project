@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  MdArrowBack,
   MdDarkMode,
   MdLightMode,
   MdNotificationsNone,
@@ -41,10 +42,25 @@ const Header = () => {
     });
   };
 
+  const showBackButton = location.pathname !== "/";
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
-      {/* Left Section - Page Title */}
-      <h2 className="text-xl font-semibold text-gray-800">{getTitle}</h2>
+      {/* Left Section - Back + Page Title */}
+      <div className="flex items-center gap-3">
+        {showBackButton ? (
+          <button
+            onClick={() => navigate(-1)}
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100"
+            aria-label="Go back"
+          >
+            <MdArrowBack className="h-4 w-4" />
+          </button>
+        ) : (
+          <div className="w-9 h-9" />
+        )}
+        <h2 className="text-xl font-semibold text-gray-800">{getTitle}</h2>
+      </div>
 
       {/* Right Section */}
       <div className="flex items-center gap-4">

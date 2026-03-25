@@ -8,7 +8,11 @@ interface AddMeetingModalProps {
   members: TeamMember[];
 }
 
-const AddMeetingModal = ({ onClose, onCreate, members }: AddMeetingModalProps) => {
+const AddMeetingModal = ({
+  onClose,
+  onCreate,
+  members,
+}: AddMeetingModalProps) => {
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);

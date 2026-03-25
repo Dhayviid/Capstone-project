@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "../../../store/store";
 import { createTask } from "../model/task.slice";
@@ -14,25 +14,17 @@ const CreateTaskModal = ({ onClose }: Props) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.task);
   const { members } = useSelector((state: RootState) => state.team);
-  const user = useSelector((state: RootState) => state.auth.user);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<"todo" | "done">("todo");
-  const [dueDate, setDueDate] = useState<string>(
-    () => new Date().toISOString().split("T")[0],
-  );
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [scheduledAt, setScheduledAt] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
 
-  const isAdmin = members.some(
-    (member) => member.email === user?.email && member.role === "admin",
-  );
-
   useEffect(() => {
-    if (isAdmin) {
+    if (members.length === 0) {
       dispatch(fetchTeamMembers());
     }
-  }, [dispatch, isAdmin]);
+  }, [dispatch, members.length]);
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -40,120 +32,100 @@ const CreateTaskModal = ({ onClose }: Props) => {
       return;
     }
 
+    if (!assignedTo.trim()) {
+      toast.error("Please assign this task to a team member");
+      return;
+    }
+
     try {
       await dispatch(
         createTask({
           title: title.trim(),
-          description: description.trim(),
-          project: "General",
-          priority: "medium",
-          favorite: false,
-          status,
-          dueDate: dueDate || undefined,
-          assignedTo: assignedTo.trim() || undefined,
+          description: description.trim() || undefined,
+          status: "todo",
+          assignedTo: assignedTo.trim(),
+          priority,
+          scheduledAt: scheduledAt
+            ? new Date(scheduledAt).toISOString()
+            : undefined,
+          timeSpent: 0,
         }),
       ).unwrap();
-
-      toast.success("Task created successfully");
+      toast.success("Task created");
       onClose();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to create task");
+      toast.error(typeof error === "string" ? error : "Could not create task");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-      <div className="bg-white w-full max-w-md p-6 rounded-xl space-y-4">
-        <h2 className="text-lg font-semibold">Create Task</h2>
-
+    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
+      <div className="bg-white w-full max-w-md p-5 rounded-xl shadow-lg space-y-3">
+        <h3 className="text-lg font-semibold">Create Task</h3>
         <input
-          type="text"
-          placeholder="Task title"
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          disabled={loading}
+          placeholder="Title"
+          className="w-full border p-2 rounded"
         />
-
         <textarea
-          placeholder="Task description (optional)"
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          placeholder="Description"
+          className="w-full border p-2 rounded"
           rows={3}
-          disabled={loading}
         />
-
-        <select
-          className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as "todo" | "done")}
-          disabled={loading}
-        >
-          <option value="todo">Pending</option>
-          <option value="done">Completed</option>
-        </select>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-            disabled={loading}
-          />
-          {dueDate && (
-            <button
-              type="button"
-              onClick={() => setDueDate("")}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        {isAdmin ? (
+        <div className="grid grid-cols-2 gap-2">
           <select
-            className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={priority}
+            onChange={(e) =>
+              setPriority(e.target.value as "low" | "medium" | "high")
+            }
+            className="border p-2 rounded"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <input
+            type="datetime-local"
+            value={scheduledAt}
+            onChange={(e) => setScheduledAt(e.target.value)}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700">
+            Assign to:
+          </label>
+          <select
             value={assignedTo}
             onChange={(e) => setAssignedTo(e.target.value)}
-            disabled={loading}
+            className="w-full border p-2 rounded mt-1"
           >
-            <option value="">Unassigned</option>
+            <option value="">Select team member</option>
             {members.map((member) => (
               <option key={member.id} value={member.name}>
-                {member.name} ({member.role})
+                {member.name}
               </option>
             ))}
           </select>
-        ) : (
-          <input
-            type="text"
-            placeholder="Assign to (optional)"
-            className="w-full border border-gray-300 p-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-500"
-            value={assignedTo}
-            onChange={(e) => setAssignedTo(e.target.value)}
-            disabled={loading}
-          />
-        )}
-
+          {members.length === 0 && (
+            <p className="text-xs text-red-500 mt-1">
+              No team members found. Add members before creating tasks.
+            </p>
+          )}
+        </div>
         <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="text-gray-500 disabled:opacity-50"
-            disabled={loading}
-          >
+          <button onClick={onClose} className="px-3 py-1.5 border rounded">
             Cancel
           </button>
-
           <button
             onClick={handleSubmit}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}
+            className="px-3 py-1.5 bg-blue-600 text-white rounded"
+            disabled={loading || members.length === 0}
           >
-            {loading ? "Creating..." : "Create"}
+            {loading ? "Saving..." : "Create"}
           </button>
         </div>
       </div>

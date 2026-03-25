@@ -1,319 +1,118 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import ActivityCard from "../../../components/dashboard/ActivityCard";
-import AddMeetingModal from "../../../components/dashboard/AddMeetingModal";
-import CircularChartCard from "../../../components/dashboard/CircularChartCard";
-import FocusCard from "../../../components/dashboard/FocusCard";
-import type { FocusStatus } from "../../../components/dashboard/FocusCard";
-import MeetingsCard from "../../../components/dashboard/MeetingsCard";
-import TasksCard from "../../../components/dashboard/TasksCard";
-import ProjectBoard from "../../../components/projects/ProjectBoard";
-import type { Meeting } from "../../../types/meeting.types";
-import type { Task } from "../../../types/task.types";
-import {
-  createTask,
-  fetchTasks,
-  setActiveProject,
-  toggleTaskAsync,
-  updateTaskAsync,
-} from "../../../domains/task/model/task.slice";
-import { fetchTeamMembers } from "../../../domains/team/model/team.slice";
-import {
-  selectActiveProject,
-  selectProjects,
-  selectTaskStats,
-  selectTasksByProject,
-} from "../../../domains/task/model/task.selectors";
+import DashboardSummary from "../../dashboard/components/dashboard-summary";
+import TimelineBoard from "../../dashboard/components/timeline-board";
+import TimeTrackerWidget from "../../dashboard/components/time-tracker-widget";
+import RemindersWidget from "../../reminders/components/reminders-widget";
+import { fetchTasks, toggleTaskStatusAsync } from "../../task/model/task.slice";
+import { fetchTeamMembers } from "../../team/model/team.slice";
+import { selectAllTasks } from "../../task/model/task.selectors";
 import type { AppDispatch, RootState } from "../../../store/store";
-
-const WEEK_DAYS: Array<Task["day"]> = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-];
-
-const INITIAL_FOCUS_SECONDS = 25 * 60;
-
-const formatDuration = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${secs
-    .toString()
-    .padStart(2, "0")}`;
-};
+import toast from "react-hot-toast";
 
 const DashboardPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-
-  const tasks = useSelector(selectTasksByProject);
-  const projects = useSelector(selectProjects);
-  const activeProject = useSelector(selectActiveProject);
-  const stats = useSelector(selectTaskStats);
+  const tasks = useSelector(selectAllTasks);
   const loading = useSelector((state: RootState) => state.task.loading);
-  const { members } = useSelector((state: RootState) => state.team);
-
-  const [meetings, setMeetings] = useState<Meeting[]>(() => {
-    const saved = localStorage.getItem("meetings");
-    return saved ? (JSON.parse(saved) as Meeting[]) : [];
-  });
-  const [isAddMeetingOpen, setIsAddMeetingOpen] = useState(false);
-
-  const [focusSeconds, setFocusSeconds] = useState(INITIAL_FOCUS_SECONDS);
-  const [focusStatus, setFocusStatus] = useState<FocusStatus>("paused");
-  const autoScheduled = useRef<Set<string>>(new Set());
-
-  const getWeekdayFromDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
-    return weekday as Task["day"];
-  };
-
-  const todayIso = useMemo(() => new Date().toISOString().split("T")[0], []);
-  const todayWeekday = useMemo(
-    () => getWeekdayFromDate(todayIso) as NonNullable<Task["day"]>,
-    [todayIso],
-  );
+  const error = useSelector((state: RootState) => state.task.error);
 
   useEffect(() => {
     dispatch(fetchTasks());
     dispatch(fetchTeamMembers());
   }, [dispatch]);
 
-  useEffect(() => {
-    localStorage.setItem("meetings", JSON.stringify(meetings));
-  }, [meetings]);
-
-  useEffect(() => {
-    const tasksToAutoSchedule = tasks.filter(
-      (task) => task.dueDate && !autoScheduled.current.has(task.id),
-    );
-
-    tasksToAutoSchedule.forEach((task) => {
-      const desiredDay = getWeekdayFromDate(task.dueDate!);
-      if (desiredDay && task.day !== desiredDay) {
-        autoScheduled.current.add(task.id);
-        void dispatch(
-          updateTaskAsync({
-            ...task,
-            day: desiredDay,
-          }),
-        );
-      }
-    });
-  }, [dispatch, tasks, todayIso]);
-
-  const handleStartTask = useCallback(
-    (taskId: string) => {
-      const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
-      void dispatch(
-        updateTaskAsync({
-          ...task,
-          status: "in-progress",
-        }),
-      );
-    },
-    [dispatch, tasks],
-  );
-
-  const handleToggleFavorite = useCallback(
-    (taskId: string) => {
-      const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
-      void dispatch(
-        updateTaskAsync({
-          ...task,
-          favorite: !task.favorite,
-        }),
-      );
-    },
-    [dispatch, tasks],
-  );
-
-  const handleToggleComplete = useCallback(
-    (taskId: string) => {
-      void dispatch(toggleTaskAsync(taskId));
-    },
-    [dispatch],
-  );
-
-  const handleCreateTask = useCallback(
-    async (
-      task: Pick<Task, "title" | "project" | "priority"> & {
-        dueDate?: string;
-      },
-    ) => {
-      const day = task.dueDate ? getWeekdayFromDate(task.dueDate) : undefined;
-      await dispatch(
-        createTask({
-          title: task.title,
-          project: task.project,
-          priority: task.priority,
-          favorite: false,
-          status: "todo",
-          dueDate: task.dueDate,
-          day,
-        }),
-      ).unwrap();
-    },
-    [dispatch],
-  );
-
-  const handleCreateMeeting = useCallback(
-    (meeting: Meeting) => {
-      setMeetings((prev) => [meeting, ...prev]);
-      setIsAddMeetingOpen(false);
-    },
-    [setMeetings],
-  );
-
-  const handleProjectChange = useCallback(
-    (project: string | null) => {
-      dispatch(setActiveProject(project));
-    },
-    [dispatch],
-  );
-
-  const handleMoveTask = useCallback(
-    (taskId: string, toDay: Task["day"]) => {
-      const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
-      void dispatch(
-        updateTaskAsync({
-          ...task,
-          day: toDay,
-        }),
-      );
-    },
-    [dispatch, tasks],
-  );
-
-  const todayTasks = useMemo(
+  const todayIso = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const upcoming = useMemo(
     () =>
-      tasks.filter(
-        (task): task is Task & { day: NonNullable<Task["day"]> } =>
-          task.dueDate === todayIso && Boolean(task.day),
-      ),
+      tasks
+        .filter((t) => t.scheduledAt && t.scheduledAt >= todayIso)
+        .slice(0, 4),
     [tasks, todayIso],
   );
 
-  const boardTasks = useMemo(
-    () =>
-      tasks.filter((task) => task.day && task.dueDate !== todayIso) as Array<
-        Task & { day: NonNullable<Task["day"]> }
-      >,
-    [tasks, todayIso],
-  );
-
-  const weekData = useMemo(() => {
-    const counts = WEEK_DAYS.map(
-      (day) => tasks.filter((task) => task.day === day).length,
-    );
-    // add weekend placeholders for ActivityCard (7 values)
-    return [...counts, 0, 0];
-  }, [tasks]);
-
-
-  useEffect(() => {
-    if (focusStatus !== "running") return;
-
-    const interval = window.setInterval(() => {
-      setFocusSeconds((seconds) => {
-        if (seconds <= 1) {
-          setFocusStatus("paused");
-          return INITIAL_FOCUS_SECONDS;
-        }
-        return seconds - 1;
-      });
-    }, 1000);
-
-    return () => window.clearInterval(interval);
-  }, [focusStatus]);
-
-  const toggleFocus = () => {
-    setFocusStatus((prev) => {
-      const next = prev === "running" ? "paused" : "running";
-      if (next === "running" && focusSeconds <= 0) {
-        setFocusSeconds(INITIAL_FOCUS_SECONDS);
-      }
-      return next;
-    });
+  const handleToggle = async (id: string) => {
+    try {
+      await dispatch(toggleTaskStatusAsync(id)).unwrap();
+      toast.success("Updated task status");
+    } catch {
+      toast.error("Could not update task status");
+    }
   };
+
+  if (loading && tasks.length === 0) {
+    return <div className="text-center p-8">Loading dashboard...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 bg-white rounded-xl shadow-sm">
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={() => dispatch(fetchTasks())}
+          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 xl:grid-rows-2">
-        <div className="xl:row-span-1">
-          <FocusCard
-            projectName="Product Launch"
-            status={focusStatus}
-            duration={formatDuration(focusSeconds)}
-            onToggle={toggleFocus}
-          />
-        </div>
-
-        <div className="xl:row-span-2">
-          <TasksCard
-            tasks={tasks}
-            projects={projects}
-            activeProject={activeProject}
-            onProjectChange={handleProjectChange}
-            onToggleFavorite={handleToggleFavorite}
-            onStartTask={handleStartTask}
-            onToggleComplete={handleToggleComplete}
-            onCreateTask={handleCreateTask}
-          />
-        </div>
-
-        <div className="xl:row-span-1">
-          <MeetingsCard
-            meetings={meetings}
-            onAddMeeting={() => setIsAddMeetingOpen(true)}
-          />
-        </div>
-
-        <div className="xl:row-span-1">
-          <ActivityCard
-            completion={
-              stats.total
-                ? Math.round((stats.completed / stats.total) * 100)
-                : 0
-            }
-            weekData={weekData}
-          />
-        </div>
-
-        <div className="xl:row-start-2 xl:col-start-4">
-          <CircularChartCard
-            completed={stats.completed}
-            pending={stats.pending}
-          />
+      <div className="grid gap-4 md:grid-cols-3">
+        <TimeTrackerWidget />
+        <div className="md:col-span-2">
+          <DashboardSummary />
         </div>
       </div>
-
-      <ProjectBoard
-        tasks={boardTasks}
-        todayTasks={todayTasks}
-        todayWeekday={todayWeekday}
-        taskCount={tasks.length}
-        onMoveTask={handleMoveTask}
-      />
-
-      {isAddMeetingOpen && (
-        <AddMeetingModal
-          members={members}
-          onCreate={handleCreateMeeting}
-          onClose={() => setIsAddMeetingOpen(false)}
-        />
-      )}
-
-      {loading && (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white p-5 text-sm text-gray-500">
-          Loading tasks…
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-lg font-semibold">Timeline Board</h2>
+              <p className="text-sm text-gray-500">Tasks by day and time.</p>
+            </div>
+            <span className="text-xs text-blue-600">Auto-updated</span>
+          </div>
+          <TimelineBoard />
         </div>
-      )}
+
+        <div className="space-y-4">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <h3 className="font-semibold text-gray-800">Upcoming Tasks</h3>
+            <div className="mt-3 space-y-2">
+              {upcoming.length === 0 ? (
+                <p className="text-gray-500">No upcoming scheduled tasks.</p>
+              ) : (
+                upcoming.map((task) => (
+                  <div
+                    key={task.id}
+                    className="border border-gray-200 p-2 rounded-md flex justify-between items-center"
+                  >
+                    <div>
+                      <div className="font-medium">{task.title}</div>
+                      <div className="text-xs text-gray-500">
+                        {task.scheduledAt
+                          ? new Date(task.scheduledAt).toLocaleString()
+                          : "No schedule"}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleToggle(task.id)}
+                      className="text-blue-600 text-xs px-2 py-1 rounded-md border border-blue-200"
+                      aria-label="Toggle task status"
+                    >
+                      {task.status === "done" ? "Mark Pending" : "Mark Done"}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <RemindersWidget />
+        </div>
+      </div>
     </div>
   );
 };

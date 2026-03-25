@@ -29,7 +29,7 @@ const CircularChartCard = ({ completed, pending }: CircularChartCardProps) => {
         </div>
       </div>
 
-      <div className="mt-5 h-40 w-full">
+      <div className="mt-5 h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -37,7 +37,7 @@ const CircularChartCard = ({ completed, pending }: CircularChartCardProps) => {
               dataKey="value"
               nameKey="name"
               innerRadius="60%"
-              outerRadius="80%"
+              outerRadius="90%"
               paddingAngle={4}
             >
               {data.map((_, index) => (
